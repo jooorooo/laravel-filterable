@@ -166,22 +166,6 @@ trait FilterableTrait
         return $query->where($field, 'not like', $arg);
     }
 
-    public function scopeFilterIlike($query, $field, $arg)
-    {
-        if ($arg === null) {
-            throw new FilterableException('ILIKE rule does not accept null"');
-        }
-        return $query->where($field, 'ilike', $arg);
-    }
-
-    public function scopeFilterNotIlike($query, $field, $arg)
-    {
-        if ($arg === null) {
-            throw new FilterableException('ILIKE rule does not accept null"');
-        }
-        return $query->where($field, 'not ilike', $arg);
-    }
-
     public function scopeFilterMatch($query, $field, $arg)
     {
         if ($arg === null) {
@@ -193,7 +177,7 @@ trait FilterableTrait
         } else {
             $arg = '%' . $arg . '%';
         }
-        return $query->filterIlike($field, $arg);
+        return $query->filterLike($field, $arg);
     }
 
     public function scopeFilterNotMatch($query, $field, $arg)
@@ -207,7 +191,7 @@ trait FilterableTrait
         } else {
             $arg = '%' . $arg . '%';
         }
-        return $query->filterNotIlike($field, $arg);
+        return $query->filterNotLike($field, $arg);
     }
 
     public function scopeFilterMin($query, $field, $arg)

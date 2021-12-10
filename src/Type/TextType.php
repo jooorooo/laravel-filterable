@@ -17,7 +17,6 @@ class TextType implements FilterableType
             Filterable::FT,
             Filterable::EQ,
             Filterable::LIKE,
-            Filterable::ILIKE,
             Filterable::MATCH
         ];
     }

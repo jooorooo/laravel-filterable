@@ -16,7 +16,6 @@ class StringType implements FilterableType
         return [
             Filterable::EQ,
             Filterable::LIKE,
-            Filterable::ILIKE,
             Filterable::MATCH
         ];
     }

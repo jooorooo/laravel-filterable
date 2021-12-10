@@ -49,7 +49,6 @@ The built-in rules are:
 
 * EQ - equality
 * LIKE - SQL like
-* ILIKE - a case-insensitive version of LIKE
 * MATCH - wildcard pattern matching
 * MIN - greater than or equal to
 * MAX - less than or equal to
@@ -62,7 +61,7 @@ The built-in rules are:
 
 A standard set of rules are provided
 
-* String = [EQ, LIKE, ILIKE, MATCH]
+* String = [EQ, LIKE, MATCH]
 * Numeric = [EQ, MIN, MAX, LT, GT]
 * Enum = [EQ, IN]
 * Date = [EQ, MIN, MAX, LT, GT]
@@ -70,7 +69,7 @@ A standard set of rules are provided
 
 A model's filterable definition sets the rules available for each field. The first rule in the list is the default rule for the field. Other rules must add the rule name as a suffix in the filter query field name.
 
-In the following definition, the 'name' field can use any of the String rules: EQ, LIKE, ILIKE, MATCH.
+In the following definition, the 'name' field can use any of the String rules: EQ, LIKE, MATCH.
 
 ```
 User::$filterable = [

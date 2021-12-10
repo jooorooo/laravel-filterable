@@ -8,7 +8,6 @@ class Filterable
 {
     const EQ = 'EQ'; // equal to
     const LIKE = 'LIKE'; // SQL like
-    const ILIKE = 'ILIKE'; // case-insensitive like
     const MATCH = 'MATCH'; // glob matching
     const MIN = 'MIN'; // greater than or equal to
     const MAX = 'MAX'; // less than or equal to
