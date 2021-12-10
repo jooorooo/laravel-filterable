@@ -15,6 +15,7 @@ class EqualIntegerType implements FilterableType
     {
         return [
             Filterable::EQ,
+            Filterable::IN,
         ];
     }
 }
