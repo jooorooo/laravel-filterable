@@ -26,6 +26,7 @@ class Filterable
     const Enum = Type\EnumType::class;
     const Date = Type\DateType::class;
     const Boolean = Type\BooleanType::class;
+    const EqualInteger = Type\EqualIntegerType::class;
 
     public static function isFilterableType($class): bool
     {
