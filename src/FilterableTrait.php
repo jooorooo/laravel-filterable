@@ -65,6 +65,13 @@ trait FilterableTrait
         return $query->filterableApply($filter);
     }
 
+    /**
+     * @param $query
+     * @param $args
+     * @param null $root
+     * @return mixed
+     * @throws FilterableException
+     */
     public function scopeFilterableApply($query, $args, $root = null)
     {
         if ($args === null) {

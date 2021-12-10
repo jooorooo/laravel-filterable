@@ -26,6 +26,7 @@ class Filterable
     const Date = Type\DateType::class;
     const Boolean = Type\BooleanType::class;
     const EqualInteger = Type\EqualIntegerType::class;
+    const FullText = Type\TextFullTextType::class;
 
     public static function isFilterableType($class): bool
     {
