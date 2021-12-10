@@ -3,7 +3,7 @@
     "description": "A trait to add query filtering functions to Laravel models",
     "require": {
         "illuminate/support": "~5.1|^6|^7|^8|^9",
-        "php": ">=7.3"
+        "php": ">=7.2"
     },
     "authors": [
         {
