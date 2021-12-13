@@ -99,6 +99,9 @@ trait FilterableTrait
                     unset($args[$field]);
                 }
                 continue;
+            } elseif (array_key_exists($field, $args) && $this->hasNamedScope($namedScope = Str::camel(('filter_' . $field)))) {
+                $this->callNamedScope($namedScope, [$query, $args[$field]]);
+                continue;
             }
 
             $rules = collect($rules)->map(function ($rule) {
@@ -113,6 +116,7 @@ trait FilterableTrait
                     $k = "${field}_${rule}";
                     $nk = "${field}_NOT_${rule}";
                 }
+
                 if (array_key_exists($k, $args)) {
                     $method = 'filter' . $rule;
                     $query->$method($field, $args[$k], $root);
