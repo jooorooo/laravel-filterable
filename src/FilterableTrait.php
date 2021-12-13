@@ -255,7 +255,7 @@ trait FilterableTrait
         return $query->whereNotIn($field, $arg);
     }
 
-    public function scopeFilterFt($query, $field, $arg)
+    public function scopeFilterFt($query, $field, $arg, float $min = 0)
     {
         if ($arg === null) {
             throw new FilterableException('FT rule does not accept null"');
@@ -270,13 +270,13 @@ trait FilterableTrait
 
         $parser = new InputQueryParser($field);
         $terms = $parser->getSqlQuery($arg);
-//dd($terms, $parser->getIsValid(), $parser->getError());
+
         return $query->selectRaw(
             '(' . $rank . ') as __search_rate',
             [$terms]
         )->whereRaw(
-            '(' . $rank . ')',
-            [$terms]
+            '(' . $rank . ') > ?',
+            [$terms, $min]
         );
     }
 
