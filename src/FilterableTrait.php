@@ -100,7 +100,8 @@ trait FilterableTrait
                 }
                 continue;
             } elseif (array_key_exists($field, $args) && $this->hasNamedScope($namedScope = Str::camel(('filter_' . $field)))) {
-                $this->callNamedScope($namedScope, [$query, $args[$field]]);
+                $query->$namedScope($field, $args[$field], $root);
+                //$this->callNamedScope($namedScope, [$query, $field, $args[$field]]);
                 continue;
             }
 
@@ -259,7 +260,7 @@ trait FilterableTrait
         return $query->whereNotIn($field, $arg);
     }
 
-    public function scopeFilterFt($query, $field, $arg, float $min = 0)
+    public function scopeFilterFt($query, $field, $arg, $root = null, float $min = 0)
     {
         if ($arg === null) {
             throw new FilterableException('FT rule does not accept null"');
