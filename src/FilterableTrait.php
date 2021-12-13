@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace Simexis\Filterable;
 
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Eloquent\Relations;
 use Illuminate\Support\Str;
+use Simexis\Filterable\Parser\InputQueryParser;
 
 trait FilterableTrait
 {
@@ -20,21 +22,6 @@ trait FilterableTrait
     public function getFilterable(): array
     {
         return $this->filterable ?? [];
-    }
-
-    public function getFilterableFtTable($field): string
-    {
-        return $this->filterableFtTable ?? ($this->getTable() . '_filterable');
-    }
-
-    public function getFilterableFtKeyName($field): string
-    {
-        return $this->filterableFtKeyName ?? $this->getKeyName();
-    }
-
-    public function getFilterableFtVector($field): string
-    {
-        return $this->filterableFtVector ?? "${field}_vector";
     }
 
     public function getFilterableFilter()
@@ -104,6 +91,7 @@ trait FilterableTrait
             }
             return $query->filterableNor($args['NOR'], $root);
         }
+
         foreach ($this->getFilterable() as $field => $rules) {
             if ($rules instanceof Relations\Relation) {
                 if (array_key_exists($field, $args)) {
@@ -112,9 +100,11 @@ trait FilterableTrait
                 }
                 continue;
             }
+
             $rules = collect($rules)->map(function ($rule) {
                 return Filterable::isFilterableType($rule) ? $rule::defaultRules() : $rule;
             })->flatten()->unique();
+
             foreach ($rules as $n => $rule) {
                 if ($n === 0) {
                     $k = $field;
@@ -265,36 +255,29 @@ trait FilterableTrait
         return $query->whereNotIn($field, $arg);
     }
 
-    public function scopeFilterFt($query, $field, $arg, $root = null)
+    public function scopeFilterFt($query, $field, $arg)
     {
         if ($arg === null) {
             throw new FilterableException('FT rule does not accept null"');
         }
-        $root = $root ?: $query;
-        $table = $query->getModel()->getFilterableFtTable($field);
-        $key = $query->getModel()->getFilterableFtKeyName($field);
-        $vector = $query->getModel()->getFilterableFtVector($field);
-        $rank = "${field}_rank";
-        $_rank = DB::raw('ts_rank(' . $this->filterable__wrap($vector) . ', query) as ' . $this->filterable__wrap($rank));
 
-        $sub = DB::table($table)->select($key, $_rank);
-        $sub->crossJoin(DB::raw('plainto_tsquery(?) query'))->addBinding($arg);
+        $wrapedField = $this->filterableWrap((array)$field);
 
-        $where = $this->filterable__wrap($vector) . ' @@ ' . $this->filterable__wrap('query');
-        $sub->whereRaw($where);
+        $rank = sprintf(
+            'MATCH (%s) AGAINST (? IN BOOLEAN MODE)',
+            implode(', ', $wrapedField),
+        );
 
-        $t2 = $this->filterable__newAlias($field);
-        $f1 = $query->getModel()->getQualifiedKeyName();
-        $f2 = "${t2}.{$key}";
-        $joinMethod = ($root === $query ? 'join' : 'leftJoin');
-        $root->$joinMethod(DB::raw("({$sub->toSql()}) as {$this->filterable__wrap($t2)}"), $f1, '=', $f2);
-        foreach ($sub->getBindings() as $binding) {
-            $root->addBinding($binding, 'join');
-        }
-        if ($joinMethod === 'leftJoin') {
-            $query->whereNotNull($f2);
-        }
-        return $query;
+        $parser = new InputQueryParser($field);
+        $terms = $parser->getSqlQuery($arg);
+//dd($terms, $parser->getIsValid(), $parser->getError());
+        return $query->selectRaw(
+            '(' . $rank . ') as __search_rate',
+            [$terms]
+        )->whereRaw(
+            '(' . $rank . ')',
+            [$terms]
+        );
     }
 
     public function scopeFilterNull($query, $field, $arg = true)
@@ -543,15 +526,24 @@ trait FilterableTrait
         return $filter;
     }
 
+    /**
+     * @param array|string $field
+     * @return array|string
+     */
+    protected function filterableWrap($field)
+    {
+        if(is_array($field)) {
+            return array_map([$this, 'filterableWrap'], $field);
+        } else {
+            return $this->getConnection()->getQueryGrammar()
+                ->wrap($this->getTable() . '.' . $field);
+        }
+    }
+
     private $filterable__aliasCount = 0;
 
     private function filterable__newAlias($prefix = 't')
     {
         return $prefix . '_' . (++$this->filterable__aliasCount);
-    }
-
-    private function filterable__wrap($field)
-    {
-        return DB::getQueryGrammar()->wrap($field);
     }
 }
