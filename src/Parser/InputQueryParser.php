@@ -313,11 +313,8 @@ class InputQueryParser
                         $nextItem = TokenType::UserItem;
                         $lastItemOK = false;
                         break;
+                    case TokenType::NotOperator:
                     case TokenType::OrOperator;
-                        $nextItem = TokenType::UserItem | TokenType::LeftParenthis;
-                        $lastItemOK = false;
-                        break;
-                    case TokenType::NotOperator;
                         $nextItem = TokenType::UserItem | TokenType::LeftParenthis;
                         $lastItemOK = false;
                         break;
