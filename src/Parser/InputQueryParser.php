@@ -346,7 +346,6 @@ class InputQueryParser
                     break;
                 }
             } else {
-                dd([$token, $nextItem, $token->getTokenType() & $nextItem, $token->getTokenType(), $nextItem, $prevToken]);
                 $valid = false;
                 $this->error = "Unexpected word or character found: " . $token->getValue();
                 break;
