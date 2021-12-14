@@ -345,38 +345,42 @@ trait FilterableTrait
 
     public function scopeFilterableRelation($query, $relation, $field, $args, $root = null)
     {
-        $root = $root ?: $query;
-        $t1 = $query->getModel()->getTable();
-        $f1 = $query->getModel()->getQualifiedKeyName();
-        $class = $relation->getRelated();
-        $sub = $class::filterableApply($args);
-        $t2 = $this->filterable__newAlias(Str::plural($field));
-        $joinMethod = ($root === $query ? 'join' : 'leftJoin');
-        if ($relation instanceof Relations\BelongsToMany) {
-            $sub->join($relation->getTable(), $class->getQualifiedKeyName(), '=', $relation->getOtherKey());
-            $a2 = Str::plural($t1) . '_id';
-            $sub->distinct()->select($relation->getForeignKey() . " as $a2");
-            $f2 = $t2 . '.' . $a2;
-            $root->$joinMethod(DB::raw("({$sub->toSql()}) as {$this->filterable__wrap($t2)}"), $f1, '=', $f2);
-        } elseif ($relation instanceof Relations\HasOneOrMany) {
-            $sub->distinct()->select($relation->getForeignKey());
-            $f2 = $t2 . '.' . $relation->getPlainForeignKey();
-            $root->$joinMethod(DB::raw("({$sub->toSql()}) as {$this->filterable__wrap($t2)}"), $f1, '=', $f2);
-        } else {
-            $a2 = $field . '_id';
-            $sub->distinct()->select($relation->getQualifiedOtherKeyName() . " as $a2");
-            $key = $relation->getForeignKey();
-            $f1 = $relation->getQualifiedForeignKey();
-            $f2 = "$t2.$a2";
-            $root->$joinMethod(DB::raw("({$sub->toSql()}) as {$this->filterable__wrap($t2)}"), $f1, '=', $f2);
-        }
-        foreach ($sub->toBase()->getBindings() as $binding) {
-            $root->addBinding($binding, 'join');
-        }
-        if ($joinMethod === 'leftJoin') {
-            $query->whereNotNull($f2);
-        }
-        return $query;
+        return $query->whereHas($field, function($query) use($args) {
+            $query->where($args);
+        });
+//        dd($relation, $field, $args);
+//        $root = $root ?: $query;
+//        $t1 = $query->getModel()->getTable();
+//        $f1 = $query->getModel()->getQualifiedKeyName();
+//        $class = $relation->getRelated();
+//        $sub = $class::filterableApply($args);
+//        $t2 = $this->filterable__newAlias(Str::plural($field));
+//        $joinMethod = ($root === $query ? 'join' : 'leftJoin');
+//        if ($relation instanceof Relations\BelongsToMany) {
+//            $sub->join($relation->getTable(), $class->getQualifiedKeyName(), '=', $relation->getOtherKey());
+//            $a2 = Str::plural($t1) . '_id';
+//            $sub->distinct()->select($relation->getForeignKey() . " as $a2");
+//            $f2 = $t2 . '.' . $a2;
+//            $root->$joinMethod(DB::raw("({$sub->toSql()}) as {$this->filterable__wrap($t2)}"), $f1, '=', $f2);
+//        } elseif ($relation instanceof Relations\HasOneOrMany) {
+//            $sub->distinct()->select($relation->getForeignKey());
+//            $f2 = $t2 . '.' . $relation->getPlainForeignKey();
+//            $root->$joinMethod(DB::raw("({$sub->toSql()}) as {$this->filterable__wrap($t2)}"), $f1, '=', $f2);
+//        } else {
+//            $a2 = $field . '_id';
+//            $sub->distinct()->select($relation->getQualifiedOtherKeyName() . " as $a2");
+//            $key = $relation->getForeignKey();
+//            $f1 = $relation->getQualifiedForeignKey();
+//            $f2 = "$t2.$a2";
+//            $root->$joinMethod(DB::raw("({$sub->toSql()}) as {$this->filterable__wrap($t2)}"), $f1, '=', $f2);
+//        }
+//        foreach ($sub->toBase()->getBindings() as $binding) {
+//            $root->addBinding($binding, 'join');
+//        }
+//        if ($joinMethod === 'leftJoin') {
+//            $query->whereNotNull($f2);
+//        }
+//        return $query;
     }
 
     public function scopeFilterableModel($query, $model, $root = null)
